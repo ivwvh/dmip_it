@@ -42,12 +42,12 @@ class Field:
 
 
 class FieldCell:
-    def __init__(self, x, y, image='.') -> None:
+    def __init__(self, x:int, y:int, image='.') -> None:
         self.image = image
         self.y = y
         self.x = x
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.image
 
 
