@@ -1,4 +1,4 @@
-import pynput
+
 """
 Необходимо реализовать игру «Ловкий муравьед».
 Главный герой – голодный, но очень ловкий муравьед бегает по двумерному полю от
@@ -63,7 +63,7 @@ class Field:
         self.cells = [
             [FieldCell(x, y) for x in range(self.columns)] for y in range(self.rows)
         ]
-        self.cells[self.player.y ][self.player.x ].content = self.player 
+        self.cells[self.player.y][self.player.x].content = self.player 
 
     def draw_field(self) -> None:
         for row in self.cells:
