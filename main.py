@@ -123,8 +123,3 @@ class Game:
 
 game = Game()
 game.run()
-'''player = Player()
-field = Field(COLUMNS, ROWS, player=player)
-player.x, player.y = field.columns // 2, field.rows // 2
-field.generate_field()
-field.draw_field()'''
