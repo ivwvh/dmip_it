@@ -87,7 +87,7 @@ class Field:
             if event.name == 'down' and self.player.y < ROWS - 1:
                 self.player.y += 1
 
-    def generate_field(self) -> list:
+    def generate_field(self) -> None:
         self.cells = [
             [FieldCell(x, y) for x in range(self.columns)] for y in range(self.rows)
         ]
