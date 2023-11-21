@@ -42,9 +42,6 @@ class FieldCell:
         self.x = x
         self.content = None
 
-    def __str__(self):
-        return self.image
-
     def draw(self) -> None:
         if self.content:
             print(self.content.image, end='')
@@ -57,12 +54,6 @@ class Player:
         self.x = x
         self.y = y
         self.image = PLAYER_IMAGE
-
-    def move(self) -> None:
-        pass
-
-    def __str__(self) -> str:
-        return self.image
 
 
 class Field:
@@ -78,13 +69,13 @@ class Field:
     def move_player(self) -> None:
         event = keyboard.read_event()
         if event.event_type == keyboard.KEY_DOWN:
-            if event.name == 'right' and self.player.x < COLUMNS - 1:
+            if event.name == 'right' and self.player.x < self.columns - 1:
                 self.player.x += 1
             if event.name == 'left' and self.player.x > 0:
                 self.player.x -= 1
             if event.name == 'up' and self.player.y > 0:
                 self.player.y -= 1
-            if event.name == 'down' and self.player.y < ROWS - 1:
+            if event.name == 'down' and self.player.y < self.rows - 1:
                 self.player.y += 1
 
     def generate_field(self) -> None:
