@@ -40,20 +40,57 @@ MIN_ANTHILLS = 1
 
 
 class GameObject:
+    '''
+    Базовый класс для создания игровых объектов
+
+    Атрибуты:
+        x: int - координата x
+        y: int - координата y
+    '''
+    
     def __init__(self, y, x, image) -> None:
+        '''
+        Конструктор класса
+        
+        Аругменты:
+            x: int - координата x
+            y: int - координата y
+            image: str - символ, представляющий объект
+        '''
         self.y = y
         self.x = x
         self.image = image
 
 
 class FieldCell:
+    '''
+    Класс представляющий клетку поля
+    
+    Атрибуты:
+        x: int - координата x
+        y: int - координата y
+        image: str - символ, представляющий объект
+        content: Any - объект находящийся на клетке
+    '''
+    
     def __init__(self, x: int, y: int) -> None:
+        '''
+        Конструктор класса
+
+        Аругменты:
+            x: int - координата x
+            y: int - координата y
+            
+        '''
         self.image = CELL_IMAGE
         self.y = y
         self.x = x
         self.content = None
 
     def draw(self) -> None:
+        '''
+        Метод выводящитй содеримое клетки на экран
+        '''
         if self.content:
             print(self.content.image, end='')
         else:
@@ -61,22 +98,78 @@ class FieldCell:
 
 
 class AntHill(GameObject):
+    '''
+    Объект представляющий муравейник, является дочерним классом от GameObject
+
+
+    Атрибуты:
+        x: int - координата x
+        y: int - координата y
+
+    '''
+    
     def __init__(self, y, x) -> None:
+        '''
+        Конструктор класса
+
+        Аргументы:
+            x: int - координата x
+            y: int - координата y
+            image: str - символ, представляющий объект
+        '''
         self.image = ANTHILL_IMAGE
         super().__init__(y, x, self.image)
 
 
 class Player(GameObject):
+    '''
+    Объект представляющий игрока, является дочерним классом от GameObject
+
+
+    Атрибуты:
+       x: int - координата x
+       y: int - координата y
+
+    '''
+
     def __init__(self, y, x) -> None:
+        '''
+        Конструктор класса
+
+        Аргументы:
+            x: int - координата x
+            y: int - координата y
+            image: str - символ, представляющий объект
+        '''
         self.image = PLAYER_IMAGE
         super().__init__(y, x, self.image)
 
 
 class Field:
+    '''
+    Объект представляющий игровое поле
+    
+    Атрибуты:
+        columns: int - кол-во колонн поля
+        rows: int - кол-во рядов поля
+        player: Player - игрок
+        anthills: List[AntHill] - список всех муравейников и их координат
+        cells: List[FieldCell] - список всех клеток и их координат
+    '''
+    
     def __init__(self,
                  columns: int,
                  rows: int,
                  player: Player) -> None:
+        '''
+        Конструктор класса 
+
+        Аргументы:
+            columns: int - кол-во колонн поля
+            rows: int - кол-во рядов поля
+            player: Player - игрок
+        '''
+
         self.columns = columns
         self.rows = rows
         self.player = player
@@ -84,6 +177,9 @@ class Field:
         self.cells = [] 
 
     def generate_field(self) -> None:
+        '''
+        Метод генерирующий поле со всеми объектами
+        '''
         self.cells = [
             [FieldCell(x, y) for x in range(self.columns)] for y in range(self.rows)
         ]
@@ -92,12 +188,18 @@ class Field:
         self.cells[self.player.y][self.player.x].content = self.player
 
     def draw_field(self) -> None:
+        '''
+        Метод выводящий поле на экран
+        ''' 
         for row in self.cells:
             for cell in row:
                 cell.draw()
             print('')
 
     def generate_anthills(self) -> None:
+        '''
+        Метод генерирующий муравейники
+        '''
         used_cords = [(i.y, i.x) for i in self.anthills if len(self.anthills) > 0]
         anthill_y = randint(0, self.rows - 1)
         anthill_x = randint(0, self.columns - 1)
@@ -114,6 +216,9 @@ class Field:
             return self.generate_anthills()
 
     def move_player(self) -> None:
+        '''
+        Метод перемещающий игрока по полю
+        '''
         event = keyboard.read_event()
         if event.event_type == keyboard.KEY_DOWN:
             if event.name == 'right' and self.player.x < self.columns - 1:
@@ -131,7 +236,20 @@ class Field:
 
 
 class Game:
+    '''
+    Класс представляющий игру
+    
+    Атрибуты:
+        player: Player - игрок
+        field: Field - игровое поле
+        is_running: bool - переменная отвечающая за то запущена ли игра
+
+    '''
+
     def __init__(self) -> None:
+        '''
+        Конструктор класса
+        '''
         self.player = Player(y=ROWS // 2,
                              x=COLUMNS // 2)
         self.field = Field(ROWS, COLUMNS, self.player)
@@ -141,6 +259,9 @@ class Game:
         self.is_running = True
 
     def run(self) -> None:
+        '''
+        Основной цикл событий
+        '''
         while self.is_running:
             if os.name == 'nt':
                 os.system('cls')
