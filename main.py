@@ -134,7 +134,6 @@ class Game:
         self.is_running = True
         self.field.generate_field()
         self.field.generate_anthills()
-        self.field.move_player()
 
     def run(self) -> None:
         while self.is_running:
