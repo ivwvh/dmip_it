@@ -131,9 +131,9 @@ class Game:
         self.player = Player(y=ROWS // 2,
                              x=COLUMNS // 2)
         self.field = Field(ROWS, COLUMNS, self.player)
-        self.is_running = True
         self.field.generate_field()
         self.field.generate_anthills()
+        self.is_running = True
 
     def run(self) -> None:
         while self.is_running:
