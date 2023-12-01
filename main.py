@@ -1,7 +1,8 @@
 import os
 import keyboard
 from random import randint
-import abc
+from typing import List, Tuple
+from random import choice, randint
 
 """
 Необходимо реализовать игру «Ловкий муравьед».
@@ -35,8 +36,10 @@ CELL_IMAGE = '.'
 PLAYER_IMAGE = 'P'
 ANTHILL_IMAGE = 'A'
 ANT_IMAGE = 'a'
+ANT_IMAGE = 'a'
 MAX_ANTHILLS = 4
 MIN_ANTHILLS = 1
+MAX_ANTS = 2
 
 
 class GameObject:
@@ -118,6 +121,13 @@ class AntHill(GameObject):
             image: str - символ, представляющий объект
         '''
         self.image = ANTHILL_IMAGE
+        self.ants = [Ant(0, 0) for _ in range(MAX_ANTS)]
+        super().__init__(y, x, self.image)
+
+
+class Ant(GameObject):
+    def __init__(self, x: int, y: int) -> None:
+        self.image = ANT_IMAGE
         super().__init__(y, x, self.image)
 
 
@@ -134,7 +144,7 @@ class Player(GameObject):
 
     def __init__(self, y, x) -> None:
         '''
-        Конструктор класса
+        Конструктор классаinput 
 
         Аргументы:
             x: int - координата x
@@ -174,7 +184,8 @@ class Field:
         self.rows = rows
         self.player = player
         self.anthills = []
-        self.cells = [] 
+        self.cells = []
+        self.ants = []
 
     def generate_field(self) -> None:
         '''
@@ -185,6 +196,8 @@ class Field:
         ]
         for anthill in self.anthills:
             self.cells[anthill.y][anthill.x].content = anthill
+        for ant in self.ants:
+            self.cells[ant.y][ant.x].content = ant
         self.cells[self.player.y][self.player.x].content = self.player
 
     def draw_field(self) -> None:
@@ -234,6 +247,50 @@ class Field:
                 if not self.cells[self.player.y + 1][self.player.x].content:
                     self.player.y += 1
 
+    def get_neighbours(self, y: int, x: int) -> list:
+        '''плохой индекс - 0 > x > COLUMNS,
+                            0 > y > ROWS'''
+        all_neighbours = [
+            (y - 1, x - 1), (y - 1, x), (y - 1, x + 1),
+            (y, x - 1), (y, x + 1),
+            (y + 1, x - 1), (y + 1, x), (y + 1, x + 1)
+        ]
+        possible_neighbours = []
+        for y, x in all_neighbours:
+            if x > 0 and x < COLUMNS and y > 0 and y < ROWS:
+                if not self.cells[y][x].content:
+                    possible_neighbours.append((y, x))
+        return possible_neighbours
+    
+    def spawn_ants(self) -> None:
+        anthill = choice(self.anthills)
+        if anthill.ants:
+            ant = anthill.ants[0]
+            position = choice(self.get_neighbours(anthill.y,
+                                                  anthill.x))
+            ant.y, ant.x = position
+            self.ants.append(anthill.ants.pop(0))
+
+    def move_ants(self) -> None:
+        for ant in self.ants:
+            if randint(0, 1):
+                if ant.x > 0 and ant.x < COLUMNS - 1:
+                    if randint(0, 1):
+                        if self.cells[ant.y][ant.x + 1].content:
+                            ant.x += 1
+                    else:
+                        if self.cells[ant.y][ant.x - 1].content:
+                            ant.x -= 1
+
+            else:
+                if ant.y > 0 and ant.y < ROWS - 1:
+                    if randint(0, 1):
+                        if not self.cells[ant.y + 1][ant.x].content:
+                            ant.y += 1
+                    else:
+                        if not self.cells[ant.y - 1][ant.x].content:
+                            ant.y -= 1
+
 
 class Game:
     '''
@@ -263,12 +320,15 @@ class Game:
         Основной цикл событий
         '''
         while self.is_running:
+
             if os.name == 'nt':
                 os.system('cls')
             else:
                 os.system('clear')
             self.field.draw_field()
+            self.field.spawn_ants()
             self.field.move_player()
+            self.field.move_ants()
             self.field.generate_field()
 
 
