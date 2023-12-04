@@ -1,8 +1,8 @@
 import os
 import keyboard
-from random import randint
 from typing import List, Tuple
 from random import choice, randint
+from time import sleep
 
 """
 Необходимо реализовать игру «Ловкий муравьед».
@@ -30,16 +30,18 @@ from random import choice, randint
 """
 
 
-ROWS = 10
-COLUMNS = 10
+ROWS = 20 
+COLUMNS = 20
 CELL_IMAGE = '.'
 PLAYER_IMAGE = 'P'
 ANTHILL_IMAGE = 'A'
 ANT_IMAGE = 'a'
 ANT_IMAGE = 'a'
-MAX_ANTHILLS = 4
+MAX_ANTHILLS = 10
 MIN_ANTHILLS = 1
-MAX_ANTS = 2
+MAX_ANTS = 5
+
+
 
 
 class GameObject:
@@ -54,7 +56,7 @@ class GameObject:
     def __init__(self, y, x, image) -> None:
         '''
         Конструктор класса
-        
+    
         Аругменты:
             x: int - координата x
             y: int - координата y
@@ -152,6 +154,8 @@ class Player(GameObject):
             image: str - символ, представляющий объект
         '''
         self.image = PLAYER_IMAGE
+        self.eaten_ants = 0
+        self.ran_away = 0
         super().__init__(y, x, self.image)
 
 
@@ -235,21 +239,53 @@ class Field:
         event = keyboard.read_event()
         if event.event_type == keyboard.KEY_DOWN:
             if event.name == 'right' and self.player.x < self.columns - 1:
-                if not self.cells[self.player.y][self.player.x + 1].content:  # возможно плохой подход - муравей тоже может быть content` ом клетки
+                if isinstance(self.cells[self.player.y][self.player.x + 1].content, Ant):
+                    cell_content = self.cells[self.player.y][self.player.x + 1].content
+                    ant_index = self.ants.index(cell_content)
+                    self.ants.pop(ant_index)
+                    self.player.eaten_ants += 1
                     self.player.x += 1
+                    return
+
+                if not self.cells[self.player.y][self.player.x + 1].content: 
+                    self.player.x += 1
+
             if event.name == 'left' and self.player.x > 0:
+                if isinstance(self.cells[self.player.y][self.player.x - 1].content, Ant):
+                    cell_content = self.cells[self.player.y][self.player.x - 1].content
+                    ant_index = self.ants.index(cell_content)
+                    self.ants.pop(ant_index)
+                    self.player.eaten_ants += 1
+                    self.player.x -= 1
+                    return
                 if not self.cells[self.player.y][self.player.x - 1].content:
                     self.player.x -= 1
+
             if event.name == 'up' and self.player.y > 0:
+                if isinstance(self.cells[self.player.y - 1][self.player.x].content, Ant):
+                    cell_content = self.cells[self.player.y - 1][self.player.x].content
+                    ant_index = self.ants.index(cell_content)
+                    self.ants.pop(ant_index)
+                    self.player.eaten_ants += 1
+                    self.player.y -= 1
+                    return
+
                 if not self.cells[self.player.y - 1][self.player.x].content:
                     self.player.y -= 1
+
             if event.name == 'down' and self.player.y < self.rows - 1:
+                if isinstance(self.cells[self.player.y + 1][self.player.x].content, Ant):
+                    cell_content = self.cells[self.player.y + 1][self.player.x].content
+                    ant_index = self.ants.index(cell_content)
+                    self.ants.pop(ant_index)
+                    self.player.eaten_ants += 1
+                    self.player.y += 1
+                    return
+
                 if not self.cells[self.player.y + 1][self.player.x].content:
                     self.player.y += 1
 
     def get_neighbours(self, y: int, x: int) -> list:
-        '''плохой индекс - 0 > x > COLUMNS,
-                            0 > y > ROWS'''
         all_neighbours = [
             (y - 1, x - 1), (y - 1, x), (y - 1, x + 1),
             (y, x - 1), (y, x + 1),
@@ -257,39 +293,52 @@ class Field:
         ]
         possible_neighbours = []
         for y, x in all_neighbours:
-            if x > 0 and x < COLUMNS and y > 0 and y < ROWS:
+            if x > 0 and x < self.columns and y > 0 and y < self.rows:
                 if not self.cells[y][x].content:
                     possible_neighbours.append((y, x))
+
         return possible_neighbours
     
     def spawn_ants(self) -> None:
         anthill = choice(self.anthills)
         if anthill.ants:
+            neighbours = self.get_neighbours(anthill.y,
+                                             anthill.x)
             ant = anthill.ants[0]
-            position = choice(self.get_neighbours(anthill.y,
-                                                  anthill.x))
+            if neighbours:
+                position = choice(neighbours)
+            else:
+                return
             ant.y, ant.x = position
             self.ants.append(anthill.ants.pop(0))
 
     def move_ants(self) -> None:
-        for ant in self.ants:
-            if randint(0, 1):
-                if ant.x > 0 and ant.x < COLUMNS - 1:
-                    if randint(0, 1):
-                        if self.cells[ant.y][ant.x + 1].content:
-                            ant.x += 1
+        for index, ant in enumerate(self.ants):
+            match(randint(0, 3)):
+                case 0:
+                    if ant.x > 0 and ant.x < COLUMNS - 1:
+                        if randint(0, 1):
+                            if not self.cells[ant.y][ant.x + 1].content:
+                                ant.x += 1
+                        else:
+                            if not self.cells[ant.y][ant.x - 1].content:
+                                ant.x -= 1
                     else:
-                        if self.cells[ant.y][ant.x - 1].content:
-                            ant.x -= 1
-
-            else:
-                if ant.y > 0 and ant.y < ROWS - 1:
-                    if randint(0, 1):
-                        if not self.cells[ant.y + 1][ant.x].content:
-                            ant.y += 1
+                        self.ants.pop(index)
+                        self.player.ran_away += 1
+                case 1:
+                    if ant.y > 0 and ant.y < ROWS - 1:
+                        if randint(0, 1):
+                            if not self.cells[ant.y + 1][ant.x].content:
+                                ant.y += 1
+                        else:
+                            if not self.cells[ant.y - 1][ant.x].content:
+                                ant.y -= 1
                     else:
-                        if not self.cells[ant.y - 1][ant.x].content:
-                            ant.y -= 1
+                        self.ants.pop(index)
+                        self.player.ran_away += 1
+                case 3:
+                    pass
 
 
 class Game:
@@ -327,6 +376,9 @@ class Game:
                 os.system('clear')
             self.field.draw_field()
             self.field.spawn_ants()
+            print(f'Набрано очков {self.player.eaten_ants}')
+            print(f'Сбежало {self.player.ran_away}')
+            sleep(0.08)
             self.field.move_player()
             self.field.move_ants()
             self.field.generate_field()
