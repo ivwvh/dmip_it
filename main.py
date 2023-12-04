@@ -1,6 +1,6 @@
 import os
 import keyboard
-from typing import List, Tuple
+from typing import Tuple
 from random import choice, randint
 from time import sleep
 
@@ -30,18 +30,16 @@ from time import sleep
 """
 
 
-ROWS = 20 
-COLUMNS = 20
+ROWS = 10 
+COLUMNS = 10
 CELL_IMAGE = '.'
 PLAYER_IMAGE = 'P'
 ANTHILL_IMAGE = 'A'
 ANT_IMAGE = 'a'
 ANT_IMAGE = 'a'
-MAX_ANTHILLS = 10
+MAX_ANTHILLS = 4 
 MIN_ANTHILLS = 1
-MAX_ANTS = 5
-
-
+MAX_ANTS = 3
 
 
 class GameObject:
@@ -146,7 +144,7 @@ class Player(GameObject):
 
     def __init__(self, y, x) -> None:
         '''
-        Конструктор классаinput 
+        Конструктор класса
 
         Аргументы:
             x: int - координата x
@@ -285,7 +283,7 @@ class Field:
                 if not self.cells[self.player.y + 1][self.player.x].content:
                     self.player.y += 1
 
-    def get_neighbours(self, y: int, x: int) -> list:
+    def get_neighbours(self, y: int, x: int) -> Tuple[int]:
         all_neighbours = [
             (y - 1, x - 1), (y - 1, x), (y - 1, x + 1),
             (y, x - 1), (y, x + 1),
